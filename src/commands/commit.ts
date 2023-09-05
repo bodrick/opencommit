@@ -154,7 +154,7 @@ ${chalk.grey('——————————————————')}`
 
 export async function commit(
   extraArgs: string[] = [],
-  isStageAllFlag: Boolean = false
+  isStageAllFlag: boolean = false
 ) {
   if (isStageAllFlag) {
     const changedFiles = await getChangedFiles();
