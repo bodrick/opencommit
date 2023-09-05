@@ -1,7 +1,4 @@
-import {
-  ChatCompletionRequestMessage,
-  ChatCompletionRequestMessageRoleEnum
-} from 'openai';
+import OpenAI from 'openai';
 
 import { api } from './api';
 import { DEFAULT_MODEL_TOKEN_LIMIT, getConfig } from './commands/config';
@@ -13,7 +10,7 @@ const config = getConfig();
 
 const generateCommitMessageChatCompletionPrompt = async (
   diff: string
-): Promise<Array<ChatCompletionRequestMessage>> => {
+): Promise<Array<OpenAI.Chat.CreateChatCompletionRequestMessage>> => {
   const INIT_MESSAGES_PROMPT = await getMainCommitPrompt();
 
   const chatContextAsCompletionRequest = [...INIT_MESSAGES_PROMPT];
