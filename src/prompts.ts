@@ -1,7 +1,4 @@
-import {
-  ChatCompletionRequestMessage,
-  ChatCompletionRequestMessageRoleEnum
-} from 'openai';
+import OpenAI from 'openai';
 
 import { note } from '@clack/prompts';
 
@@ -18,7 +15,7 @@ const translation = i18n[(config?.OCO_LANGUAGE as I18nLocals) || 'en'];
 export const IDENTITY =
   'You are to act as the author of a commit message in git.';
 
-const INIT_MAIN_PROMPT = (language: string): ChatCompletionRequestMessage => ({
+const INIT_MAIN_PROMPT = (language: string): OpenAI.Chat.CreateChatCompletionRequestMessage => ({
   role: ChatCompletionRequestMessageRoleEnum.System,
   content: `${IDENTITY} Your mission is to create clean and comprehensive commit messages as per the conventional commit convention and explain WHAT were the changes and mainly WHY the changes were done. I'll send you an output of 'git diff --staged' command, and you are to convert it into a commit message.
     ${
@@ -34,7 +31,7 @@ const INIT_MAIN_PROMPT = (language: string): ChatCompletionRequestMessage => ({
     Use the present tense. Lines must not be longer than 74 characters. Use ${language} for the commit message.`
 });
 
-export const INIT_DIFF_PROMPT: ChatCompletionRequestMessage = {
+export const INIT_DIFF_PROMPT: OpenAI.Chat.CreateChatCompletionRequestMessage = {
   role: ChatCompletionRequestMessageRoleEnum.User,
   content: `diff --git a/src/server.ts b/src/server.ts
     index ad4db42..f3b18a9 100644
@@ -64,7 +61,7 @@ export const INIT_DIFF_PROMPT: ChatCompletionRequestMessage = {
 
 const INIT_CONSISTENCY_PROMPT = (
   translation: ConsistencyPrompt
-): ChatCompletionRequestMessage => ({
+): OpenAI.Chat.CreateChatCompletionRequestMessage => ({
   role: ChatCompletionRequestMessageRoleEnum.Assistant,
   content: `${config?.OCO_EMOJI ? '🐛 ' : ''}${translation.commitFix}
 ${config?.OCO_EMOJI ? '✨ ' : ''}${translation.commitFeat}
@@ -72,7 +69,7 @@ ${config?.OCO_DESCRIPTION ? translation.commitDescription : ''}`
 });
 
 export const getMainCommitPrompt = async (): Promise<
-  ChatCompletionRequestMessage[]
+  OpenAI.Chat.CreateChatCompletionRequestMessage[]
 > => {
   switch (config?.OCO_PROMPT_MODULE) {
     case '@commitlint':

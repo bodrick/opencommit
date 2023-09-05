@@ -1,15 +1,12 @@
 import chalk from 'chalk';
-import {
-  ChatCompletionRequestMessage,
-  ChatCompletionRequestMessageRoleEnum
-} from 'openai';
+import OpenAI from 'openai';
 
 import { outro } from '@clack/prompts';
 import {
-  PromptConfig,
-  QualifiedConfig,
-  RuleConfigSeverity,
-  RuleConfigTuple
+    PromptConfig,
+    QualifiedConfig,
+    RuleConfigSeverity,
+    RuleConfigTuple
 } from '@commitlint/types';
 
 import { getConfig } from '../../commands/config';
@@ -214,7 +211,7 @@ const STRUCTURE_OF_COMMIT = `
 // Prompt to generate LLM-readable rules based on @commitlint rules.
 const GEN_COMMITLINT_CONSISTENCY_PROMPT = (
   prompts: string[]
-): ChatCompletionRequestMessage[] => [
+): OpenAI.Chat.CreateChatCompletionRequestMessage[] => [
   {
     role: ChatCompletionRequestMessageRoleEnum.Assistant,
     // prettier-ignore
@@ -260,7 +257,7 @@ Example Git Diff is to follow:`
 const INIT_MAIN_PROMPT = (
   language: string,
   prompts: string[]
-): ChatCompletionRequestMessage => ({
+): OpenAI.Chat.CreateChatCompletionRequestMessage => ({
   role: ChatCompletionRequestMessageRoleEnum.System,
   // prettier-ignore
   content: `${IDENTITY} Your mission is to create clean and comprehensive commit messages in the given @commitlint convention and explain WHAT were the changes and WHY the changes were done. I'll send you an output of 'git diff --staged' command, and you convert it into a commit message.
