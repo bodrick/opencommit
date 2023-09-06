@@ -166,13 +166,13 @@ export const getConfig = (): ConfigType | null => {
       ? Number(process.env.OCO_OPENAI_MAX_TOKENS)
       : undefined,
     OCO_OPENAI_BASE_PATH: process.env.OCO_OPENAI_BASE_PATH,
-    OCO_DESCRIPTION: process.env.OCO_DESCRIPTION === 'true' ? true : false,
-    OCO_EMOJI: process.env.OCO_EMOJI === 'true' ? true : false,
-    OCO_MODEL: process.env.OCO_MODEL || 'gpt-3.5-turbo-16k',
-    OCO_LANGUAGE: process.env.OCO_LANGUAGE || 'en',
+    OCO_DESCRIPTION: process.env.OCO_DESCRIPTION === 'true',
+    OCO_EMOJI: process.env.OCO_EMOJI === 'true',
+    OCO_MODEL: process.env.OCO_MODEL ?? 'gpt-3.5-turbo-16k',
+    OCO_LANGUAGE: process.env.OCO_LANGUAGE ?? 'en',
     OCO_MESSAGE_TEMPLATE_PLACEHOLDER:
-      process.env.OCO_MESSAGE_TEMPLATE_PLACEHOLDER || '$msg',
-    OCO_PROMPT_MODULE: process.env.OCO_PROMPT_MODULE || 'conventional-commit'
+      process.env.OCO_MESSAGE_TEMPLATE_PLACEHOLDER ?? '$msg',
+    OCO_PROMPT_MODULE: process.env.OCO_PROMPT_MODULE ?? 'conventional-commit'
   };
 
   const configExists = existsSync(configPath);
@@ -212,7 +212,7 @@ export const getConfig = (): ConfigType | null => {
 };
 
 export const setConfig = (keyValues: [key: string, value: string][]) => {
-  const config = getConfig() || {};
+  const config = getConfig() ?? {};
 
   for (const [configKey, configValue] of keyValues) {
     if (!configValidators.hasOwnProperty(configKey)) {

@@ -1,6 +1,3 @@
-import chalk from 'chalk';
-import { execa } from 'execa';
-
 import {
   confirm,
   intro,
@@ -10,6 +7,8 @@ import {
   select,
   spinner
 } from '@clack/prompts';
+import chalk from 'chalk';
+import { execa } from 'execa';
 
 import { generateCommitMessageByDiff } from '../generateCommitMessageFromGitDiff';
 import {
@@ -87,7 +86,7 @@ ${chalk.grey('——————————————————')}`
 
       const remotes = await getGitRemotes();
 
-      if (!remotes.length) {
+      if (remotes.length === 0) {
         const { stdout } = await execa('git', ['push']);
         if (stdout) outro(stdout);
         process.exit(0);
@@ -126,7 +125,9 @@ ${chalk.grey('——————————————————')}`
           options: remotes.map((remote) => ({ value: remote, label: remote }))
         })) as string;
 
-        if (!isCancel(selectedRemote)) {
+        if (isCancel(selectedRemote)) {
+          outro(`${chalk.gray('✖')} process cancelled`);
+        } else {
           const pushSpinner = spinner();
 
           pushSpinner.start(`Running 'git push ${selectedRemote}'`);
@@ -140,7 +141,7 @@ ${chalk.grey('——————————————————')}`
           );
 
           if (stdout) outro(stdout);
-        } else outro(`${chalk.gray('✖')} process cancelled`);
+        }
       }
     }
   } catch (error) {
@@ -184,7 +185,7 @@ export async function commit(
 
   stagedFilesSpinner.start('Counting staged files');
 
-  if (!stagedFiles.length) {
+  if (stagedFiles.length === 0) {
     stagedFilesSpinner.stop('No files are staged');
     const isStageAllAndCommitConfirmedByUser = await confirm({
       message: 'Do you want to stage all files and generate commit message?'

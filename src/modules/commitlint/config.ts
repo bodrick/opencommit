@@ -19,7 +19,7 @@ export const configureCommitlintIntegration = async (force = false) => {
 
   const fileExists = await utils.commitlintLLMConfigExists();
 
-  let commitLintConfig = await getCommitLintPWDConfig();
+  const commitLintConfig = await getCommitLintPWDConfig();
 
   // debug complete @commitlint configuration
   // await fs.writeFile(
@@ -56,10 +56,10 @@ export const configureCommitlintIntegration = async (force = false) => {
   // );
 
   let consistency =
-    (await api.generateCommitMessage(consistencyPrompts)) || '{}';
+    (await api.generateCommitMessage(consistencyPrompts)) ?? '{}';
 
   // Cleanup the consistency answer. Sometimes 'gpt-3.5-turbo' sends rule's back.
-  prompts.forEach((prompt) => (consistency = consistency.replace(prompt, '')));
+  for (const prompt of prompts) consistency = consistency.replace(prompt, '');
   // ... remaining might be extra set of "\n"
   consistency = utils.removeDoubleNewlines(consistency);
 
@@ -68,7 +68,7 @@ export const configureCommitlintIntegration = async (force = false) => {
     prompts,
     consistency: {
       [translation.localLanguage]: {
-        ...JSON.parse(consistency as string)
+        ...JSON.parse(consistency)
       }
     }
   };
