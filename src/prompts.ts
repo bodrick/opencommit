@@ -1,6 +1,5 @@
-import OpenAI from 'openai';
-
 import { note } from '@clack/prompts';
+import OpenAI from 'openai';
 
 import { getConfig } from './commands/config';
 import { i18n, I18nLocals } from './i18n';
@@ -15,7 +14,9 @@ const translation = i18n[(config?.OCO_LANGUAGE as I18nLocals) || 'en'];
 export const IDENTITY =
   'You are to act as the author of a commit message in git.';
 
-const INIT_MAIN_PROMPT = (language: string): OpenAI.Chat.CreateChatCompletionRequestMessage => ({
+const INIT_MAIN_PROMPT = (
+  language: string
+): OpenAI.Chat.CreateChatCompletionRequestMessage => ({
   role: ChatCompletionRequestMessageRoleEnum.System,
   content: `${IDENTITY} Your mission is to create clean and comprehensive commit messages as per the conventional commit convention and explain WHAT were the changes and mainly WHY the changes were done. I'll send you an output of 'git diff --staged' command, and you are to convert it into a commit message.
     ${
@@ -31,9 +32,10 @@ const INIT_MAIN_PROMPT = (language: string): OpenAI.Chat.CreateChatCompletionReq
     Use the present tense. Lines must not be longer than 74 characters. Use ${language} for the commit message.`
 });
 
-export const INIT_DIFF_PROMPT: OpenAI.Chat.CreateChatCompletionRequestMessage = {
-  role: ChatCompletionRequestMessageRoleEnum.User,
-  content: `diff --git a/src/server.ts b/src/server.ts
+export const INIT_DIFF_PROMPT: OpenAI.Chat.CreateChatCompletionRequestMessage =
+  {
+    role: ChatCompletionRequestMessageRoleEnum.User,
+    content: `diff --git a/src/server.ts b/src/server.ts
     index ad4db42..f3b18a9 100644
     --- a/src/server.ts
     +++ b/src/server.ts
@@ -57,7 +59,7 @@ export const INIT_DIFF_PROMPT: OpenAI.Chat.CreateChatCompletionRequestMessage = 
                 +app.listen(process.env.PORT || PORT, () => {
                     +  console.log(\`Server listening on port \${PORT}\`);
                 });`
-};
+  };
 
 const INIT_CONSISTENCY_PROMPT = (
   translation: ConsistencyPrompt
@@ -90,9 +92,7 @@ export const getMainCommitPrompt = async (): Promise<
         ),
         INIT_DIFF_PROMPT,
         INIT_CONSISTENCY_PROMPT(
-          commitLintConfig.consistency[
-            translation.localLanguage
-          ] as ConsistencyPrompt
+          commitLintConfig.consistency[translation.localLanguage]
         )
       ];
 

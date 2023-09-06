@@ -1,12 +1,12 @@
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join as pathJoin } from 'node:path';
+
+import { intro, outro } from '@clack/prompts';
 import chalk from 'chalk';
 import { command } from 'cleye';
 import * as dotenv from 'dotenv';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { parse as iniParse, stringify as iniStringify } from 'ini';
-import { homedir } from 'os';
-import { join as pathJoin } from 'path';
-
-import { intro, outro } from '@clack/prompts';
 
 import { COMMANDS } from '../CommandsEnum';
 import { getI18nLocal } from '../i18n';
@@ -76,10 +76,10 @@ export const configValidators = {
   [CONFIG_KEYS.OCO_OPENAI_MAX_TOKENS](value: any) {
     // If the value is a string, convert it to a number.
     if (typeof value === 'string') {
-      value = parseInt(value);
+      value = Number.parseInt(value);
       validateConfig(
         CONFIG_KEYS.OCO_OPENAI_MAX_TOKENS,
-        !isNaN(value),
+        !Number.isNaN(value),
         'Must be a number'
       );
     }
@@ -197,7 +197,7 @@ export const getConfig = (): ConfigType | null => {
       );
 
       config[configKey] = validValue;
-    } catch (error) {
+    } catch {
       outro(
         `'${configKey}' name is invalid, it should be either 'OCO_${configKey.toUpperCase()}' or it doesn't exist.`
       );
@@ -223,7 +223,7 @@ export const setConfig = (keyValues: [key: string, value: string][]) => {
 
     try {
       parsedConfigValue = JSON.parse(configValue);
-    } catch (error) {
+    } catch {
       parsedConfigValue = configValue;
     }
 

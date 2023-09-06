@@ -5,13 +5,20 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:unicorn/recommended',
     'plugin:prettier/recommended'
   ],
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module'
   },
-  plugins: ['simple-import-sort', 'import', '@typescript-eslint', 'prettier'],
+  plugins: [
+    'simple-import-sort',
+    'import',
+    '@typescript-eslint',
+    'prettier',
+    'unicorn'
+  ],
   settings: {
     'import/resolver': {
       node: {
@@ -29,6 +36,8 @@ module.exports = {
     'import/first': 'error',
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
-    '@typescript-eslint/no-non-null-assertion': 'off'
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    'unicorn/prevent-abbreviations': 'off',
+    'unicorn/no-process-exit': 'off'
   }
 };

@@ -1,14 +1,16 @@
-import chalk from 'chalk';
-import { command } from 'cleye';
-import { existsSync } from 'fs';
-import fs from 'fs/promises';
-import path from 'path';
+import { existsSync } from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { intro, outro } from '@clack/prompts';
+import chalk from 'chalk';
+import { command } from 'cleye';
 
 import { COMMANDS } from '../CommandsEnum.js';
 import { assertGitRepo, getCoreHooksPath } from '../utils/git.js';
 
+const __filename = fileURLToPath(import.meta.url);
 const HOOK_NAME = 'prepare-commit-msg';
 const DEFAULT_SYMLINK_URL = path.join('.git', 'hooks', HOOK_NAME);
 
@@ -16,7 +18,7 @@ const getHooksPath = async (): Promise<string> => {
   try {
     const hooksPath = await getCoreHooksPath();
     return path.join(hooksPath, HOOK_NAME);
-  } catch (error) {
+  } catch {
     return DEFAULT_SYMLINK_URL;
   }
 };

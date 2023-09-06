@@ -1,4 +1,4 @@
-import { unlinkSync, writeFileSync } from 'fs';
+import { unlinkSync, writeFileSync } from 'node:fs';
 
 import core from '@actions/core';
 import exec from '@actions/exec';
