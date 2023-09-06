@@ -34,45 +34,41 @@ const ADJUSTMENT_FACTOR = 20;
 export const generateCommitMessageByDiff = async (
   diff: string
 ): Promise<string> => {
-  try {
-    const INIT_MESSAGES_PROMPT = await getMainCommitPrompt();
+  const INIT_MESSAGES_PROMPT = await getMainCommitPrompt();
 
-    const INIT_MESSAGES_PROMPT_LENGTH = INIT_MESSAGES_PROMPT.map(
-      (msg) => tokenCount(msg.content) + 4
-    ).reduce((a, b) => a + b, 0);
+  const INIT_MESSAGES_PROMPT_LENGTH = INIT_MESSAGES_PROMPT.map(
+    (msg) => tokenCount(msg.content) + 4
+  ).reduce((a, b) => a + b, 0);
 
-    const MAX_REQUEST_TOKENS =
-      DEFAULT_MODEL_TOKEN_LIMIT -
-      ADJUSTMENT_FACTOR -
-      INIT_MESSAGES_PROMPT_LENGTH -
-      config?.OCO_OPENAI_MAX_TOKENS;
+  const MAX_REQUEST_TOKENS =
+    DEFAULT_MODEL_TOKEN_LIMIT -
+    ADJUSTMENT_FACTOR -
+    INIT_MESSAGES_PROMPT_LENGTH -
+    config?.OCO_OPENAI_MAX_TOKENS;
 
-    if (tokenCount(diff) >= MAX_REQUEST_TOKENS) {
-      const commitMessagePromises = await getCommitMsgsPromisesFromFileDiffs(
-        diff,
-        MAX_REQUEST_TOKENS
-      );
+  if (tokenCount(diff) >= MAX_REQUEST_TOKENS) {
+    const commitMessagePromises = await getCommitMsgsPromisesFromFileDiffs(
+      diff,
+      MAX_REQUEST_TOKENS
+    );
 
-      const commitMessages = [];
-      for (const promise of commitMessagePromises) {
-        commitMessages.push(await promise);
-        await delay(2000);
-      }
-
-      return commitMessages.join('\n\n');
+    const commitMessages = [];
+    for (const promise of commitMessagePromises) {
+      commitMessages.push(await promise);
+      await delay(2000);
     }
 
-    const messages = await generateCommitMessageChatCompletionPrompt(diff);
-
-    const commitMessage = await api.generateCommitMessage(messages);
-
-    if (!commitMessage)
-      throw new Error(GenerateCommitMessageErrorEnum.emptyMessage);
-
-    return commitMessage;
-  } catch (error) {
-    throw error;
+    return commitMessages.join('\n\n');
   }
+
+  const messages = await generateCommitMessageChatCompletionPrompt(diff);
+
+  const commitMessage = await api.generateCommitMessage(messages);
+
+  if (!commitMessage)
+    throw new Error(GenerateCommitMessageErrorEnum.emptyMessage);
+
+  return commitMessage;
 };
 
 function getMessagesPromisesByChangesInFile(
@@ -122,19 +118,19 @@ function splitDiff(diff: string, maxChangeLength: number) {
   for (let line of lines) {
     // If a single line exceeds maxChangeLength, split it into multiple lines
     while (tokenCount(line) > maxChangeLength) {
-      const subLine = line.substring(0, maxChangeLength);
-      line = line.substring(maxChangeLength);
+      const subLine = line.slice(0, Math.max(0, maxChangeLength));
+      line = line.slice(Math.max(0, maxChangeLength));
       splitDiffs.push(subLine);
     }
 
     // Check the tokenCount of the currentDiff and the line separately
-    if (tokenCount(currentDiff) + tokenCount('\n' + line) > maxChangeLength) {
+    if (tokenCount(currentDiff) + tokenCount(`\n${line}`) > maxChangeLength) {
       // If adding the next line would exceed the maxChangeLength, start a new diff
       splitDiffs.push(currentDiff);
       currentDiff = line;
     } else {
       // Otherwise, add the line to the current diff
-      currentDiff += '\n' + line;
+      currentDiff += `\n${line}`;
     }
   }
 

@@ -1,13 +1,12 @@
-import chalk from 'chalk';
-import OpenAI from 'openai';
-
 import { outro } from '@clack/prompts';
 import {
-    PromptConfig,
-    QualifiedConfig,
-    RuleConfigSeverity,
-    RuleConfigTuple
+  PromptConfig,
+  QualifiedConfig,
+  RuleConfigSeverity,
+  RuleConfigTuple
 } from '@commitlint/types';
+import chalk from 'chalk';
+import OpenAI from 'openai';
 
 import { getConfig } from '../../commands/config';
 import { i18n, I18nLocals } from '../../i18n';
@@ -36,7 +35,7 @@ type PromptResolverFunction = (
 ) => string;
 
 /**
- * Extracts more contexte for each type-enum.
+ * Extracts more context for each type-enum.
  * IDEA: replicate the concept for scopes and refactor to a generic feature.
  */
 const getTypeRuleExtraDescription = (
@@ -73,9 +72,7 @@ const llmReadableRules: {
       ? value
           .map((v) => {
             const description = getTypeRuleExtraDescription(v, prompt);
-            if (description) {
-              return `${v} (${description})`;
-            } else return v;
+            return description ? `${v} (${description})` : v;
           })
           .join('\n  - ')
       : value
@@ -184,7 +181,7 @@ const getPrompt = (
   // Plugins may add their custom rules.
   // We might want to call OpenAI to build this rule's llm-readable prompt.
   outro(`${chalk.red('✖')} No prompt handler for rule "${ruleName}".`);
-  return `Please manualy set the prompt for rule "${ruleName}".`;
+  return `Please manually set the prompt for rule "${ruleName}".`;
 };
 
 export const inferPromptsFromCommitlintConfig = (

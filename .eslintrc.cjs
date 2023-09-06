@@ -5,11 +5,14 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:unicorn/recommended',
     'plugin:prettier/recommended'
   ],
   parserOptions: {
-    ecmaVersion: 12,
+    project: true,
+    tsconfigRootDir: __dirname,
+    ecmaVersion: 2022,
     sourceType: 'module'
   },
   plugins: [
@@ -38,6 +41,13 @@ module.exports = {
     'import/no-duplicates': 'error',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'unicorn/prevent-abbreviations': 'off',
-    'unicorn/no-process-exit': 'off'
-  }
+    'unicorn/no-process-exit': 'off',
+    'unicorn/filename-case': 'off'
+  },
+  overrides: [
+    {
+      files: ['*.js', '*.cjs'],
+      extends: ['plugin:@typescript-eslint/disable-type-checked']
+    }
+  ]
 };
