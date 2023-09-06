@@ -57,10 +57,10 @@ export const prepareCommitMessageHook = async (
 
     await fs.writeFile(
       messageFilePath,
-      commitMessage + '\n' + fileContent.toString()
+      `${commitMessage}\n${fileContent.toString()}`
     );
   } catch (error) {
-    outro(`${chalk.red('✖')} ${error}`);
+    if (error instanceof Error) outro(`${chalk.red('✖')} ${error.message}`);
     process.exit(1);
   }
 };

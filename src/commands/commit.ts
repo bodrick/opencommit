@@ -30,9 +30,10 @@ const getGitRemotes = async () => {
 
 // Check for the presence of message templates
 const checkMessageTemplate = (extraArgs: string[]): string | false => {
-  for (const key in extraArgs) {
-    if (extraArgs[key].includes(config?.OCO_MESSAGE_TEMPLATE_PLACEHOLDER))
-      return extraArgs[key];
+  for (const arg of extraArgs) {
+    if (arg.includes(config?.OCO_MESSAGE_TEMPLATE_PLACEHOLDER)) {
+      return arg;
+    }
   }
   return false;
 };
@@ -147,8 +148,7 @@ ${chalk.grey('——————————————————')}`
   } catch (error) {
     commitSpinner.stop('📝 Commit message generated');
 
-    const err = error as Error;
-    outro(`${chalk.red('✖')} ${err?.message || err}`);
+    if (error instanceof Error) outro(`${chalk.red('✖')} ${error.message}`);
     process.exit(1);
   }
 };
@@ -231,7 +231,7 @@ export async function commit(
   );
 
   if (generateCommitError) {
-    outro(`${chalk.red('✖')} ${generateCommitError}`);
+    outro(`${chalk.red('✖')} ${generateCommitError.message}`);
     process.exit(1);
   }
 

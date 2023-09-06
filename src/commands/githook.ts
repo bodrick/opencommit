@@ -99,7 +99,7 @@ export const hookCommand = command(
         `Unsupported mode: ${mode}. Supported modes are: 'set' or 'unset'`
       );
     } catch (error) {
-      outro(`${chalk.red('✖')} ${error}`);
+      if (error instanceof Error) outro(`${chalk.red('✖')} ${error.message}`);
       process.exit(1);
     }
   }

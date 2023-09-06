@@ -1,14 +1,13 @@
+import { intro, outro } from '@clack/prompts';
 import axios from 'axios';
 import chalk from 'chalk';
 import { execa } from 'execa';
 import OpenAI from 'openai';
 
-import { intro, outro } from '@clack/prompts';
-
 import {
-    CONFIG_MODES,
-    DEFAULT_MODEL_TOKEN_LIMIT,
-    getConfig
+  CONFIG_MODES,
+  DEFAULT_MODEL_TOKEN_LIMIT,
+  getConfig
 } from './commands/config';
 import { GenerateCommitMessageErrorEnum } from './generateCommitMessageFromGitDiff';
 import { tokenCount } from './utils/tokenCount';
