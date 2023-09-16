@@ -1,5 +1,6 @@
+import fs from 'node:fs';
+
 import { build } from 'esbuild';
-import fs from 'fs';
 
 await build({
   entryPoints: ['./src/cli.ts'],

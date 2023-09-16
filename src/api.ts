@@ -1,13 +1,8 @@
+import { intro, outro } from '@clack/prompts';
 import axios from 'axios';
 import chalk from 'chalk';
 import { execa } from 'execa';
-import {
-  ChatCompletionRequestMessage,
-  Configuration as OpenAiApiConfiguration,
-  OpenAIApi
-} from 'openai';
-
-import { intro, outro } from '@clack/prompts';
+import OpenAI from 'openai';
 
 import {
   CONFIG_MODES,
@@ -44,17 +39,17 @@ class OpenAi {
   private openAiApiConfiguration = new OpenAiApiConfiguration({
     apiKey: apiKey
   });
-  private openAI!: OpenAIApi;
+  private openAI!: OpenAI;
 
   constructor() {
     if (basePath) {
       this.openAiApiConfiguration.basePath = basePath;
     }
-    this.openAI = new OpenAIApi(this.openAiApiConfiguration);
+    this.openAI = new OpenAI(this.openAiApiConfiguration);
   }
 
   public generateCommitMessage = async (
-    messages: Array<ChatCompletionRequestMessage>
+    messages: Array<OpenAI.Chat.CreateChatCompletionRequestMessage>
   ): Promise<string | undefined> => {
     const params = {
       model: MODEL,

@@ -1,9 +1,3 @@
-import chalk from 'chalk';
-import {
-  ChatCompletionRequestMessage,
-  ChatCompletionRequestMessageRoleEnum
-} from 'openai';
-
 import { outro } from '@clack/prompts';
 import {
   PromptConfig,
@@ -11,6 +5,8 @@ import {
   RuleConfigSeverity,
   RuleConfigTuple
 } from '@commitlint/types';
+import chalk from 'chalk';
+import OpenAI from 'openai';
 
 import { getConfig } from '../../commands/config';
 import { i18n, I18nLocals } from '../../i18n';
@@ -39,7 +35,7 @@ type PromptResolverFunction = (
 ) => string;
 
 /**
- * Extracts more contexte for each type-enum.
+ * Extracts more context for each type-enum.
  * IDEA: replicate the concept for scopes and refactor to a generic feature.
  */
 const getTypeRuleExtraDescription = (
@@ -76,9 +72,7 @@ const llmReadableRules: {
       ? value
           .map((v) => {
             const description = getTypeRuleExtraDescription(v, prompt);
-            if (description) {
-              return `${v} (${description})`;
-            } else return v;
+            return description ? `${v} (${description})` : v;
           })
           .join('\n  - ')
       : value
@@ -187,7 +181,7 @@ const getPrompt = (
   // Plugins may add their custom rules.
   // We might want to call OpenAI to build this rule's llm-readable prompt.
   outro(`${chalk.red('✖')} No prompt handler for rule "${ruleName}".`);
-  return `Please manualy set the prompt for rule "${ruleName}".`;
+  return `Please manually set the prompt for rule "${ruleName}".`;
 };
 
 export const inferPromptsFromCommitlintConfig = (
@@ -214,7 +208,7 @@ const STRUCTURE_OF_COMMIT = `
 // Prompt to generate LLM-readable rules based on @commitlint rules.
 const GEN_COMMITLINT_CONSISTENCY_PROMPT = (
   prompts: string[]
-): ChatCompletionRequestMessage[] => [
+): OpenAI.Chat.CreateChatCompletionRequestMessage[] => [
   {
     role: ChatCompletionRequestMessageRoleEnum.Assistant,
     // prettier-ignore
@@ -260,7 +254,7 @@ Example Git Diff is to follow:`
 const INIT_MAIN_PROMPT = (
   language: string,
   prompts: string[]
-): ChatCompletionRequestMessage => ({
+): OpenAI.Chat.CreateChatCompletionRequestMessage => ({
   role: ChatCompletionRequestMessageRoleEnum.System,
   // prettier-ignore
   content: `${IDENTITY} Your mission is to create clean and comprehensive commit messages in the given @commitlint convention and explain WHAT were the changes and WHY the changes were done. I'll send you an output of 'git diff --staged' command, and you convert it into a commit message.

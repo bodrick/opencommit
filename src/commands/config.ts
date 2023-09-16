@@ -1,12 +1,12 @@
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join as pathJoin } from 'node:path';
+
+import { intro, outro } from '@clack/prompts';
 import chalk from 'chalk';
 import { command } from 'cleye';
 import * as dotenv from 'dotenv';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { parse as iniParse, stringify as iniStringify } from 'ini';
-import { homedir } from 'os';
-import { join as pathJoin } from 'path';
-
-import { intro, outro } from '@clack/prompts';
 
 import { COMMANDS } from '../CommandsEnum';
 import { getI18nLocal } from '../i18n';
@@ -76,10 +76,10 @@ export const configValidators = {
   [CONFIG_KEYS.OCO_OPENAI_MAX_TOKENS](value: any) {
     // If the value is a string, convert it to a number.
     if (typeof value === 'string') {
-      value = parseInt(value);
+      value = Number.parseInt(value);
       validateConfig(
         CONFIG_KEYS.OCO_OPENAI_MAX_TOKENS,
-        !isNaN(value),
+        !Number.isNaN(value),
         'Must be a number'
       );
     }
@@ -166,13 +166,13 @@ export const getConfig = (): ConfigType | null => {
       ? Number(process.env.OCO_OPENAI_MAX_TOKENS)
       : undefined,
     OCO_OPENAI_BASE_PATH: process.env.OCO_OPENAI_BASE_PATH,
-    OCO_DESCRIPTION: process.env.OCO_DESCRIPTION === 'true' ? true : false,
-    OCO_EMOJI: process.env.OCO_EMOJI === 'true' ? true : false,
-    OCO_MODEL: process.env.OCO_MODEL || 'gpt-3.5-turbo-16k',
-    OCO_LANGUAGE: process.env.OCO_LANGUAGE || 'en',
+    OCO_DESCRIPTION: process.env.OCO_DESCRIPTION === 'true',
+    OCO_EMOJI: process.env.OCO_EMOJI === 'true',
+    OCO_MODEL: process.env.OCO_MODEL ?? 'gpt-3.5-turbo-16k',
+    OCO_LANGUAGE: process.env.OCO_LANGUAGE ?? 'en',
     OCO_MESSAGE_TEMPLATE_PLACEHOLDER:
-      process.env.OCO_MESSAGE_TEMPLATE_PLACEHOLDER || '$msg',
-    OCO_PROMPT_MODULE: process.env.OCO_PROMPT_MODULE || 'conventional-commit'
+      process.env.OCO_MESSAGE_TEMPLATE_PLACEHOLDER ?? '$msg',
+    OCO_PROMPT_MODULE: process.env.OCO_PROMPT_MODULE ?? 'conventional-commit'
   };
 
   const configExists = existsSync(configPath);
@@ -197,7 +197,7 @@ export const getConfig = (): ConfigType | null => {
       );
 
       config[configKey] = validValue;
-    } catch (error) {
+    } catch {
       outro(
         `'${configKey}' name is invalid, it should be either 'OCO_${configKey.toUpperCase()}' or it doesn't exist.`
       );
@@ -212,7 +212,7 @@ export const getConfig = (): ConfigType | null => {
 };
 
 export const setConfig = (keyValues: [key: string, value: string][]) => {
-  const config = getConfig() || {};
+  const config = getConfig() ?? {};
 
   for (const [configKey, configValue] of keyValues) {
     if (!configValidators.hasOwnProperty(configKey)) {
@@ -223,7 +223,7 @@ export const setConfig = (keyValues: [key: string, value: string][]) => {
 
     try {
       parsedConfigValue = JSON.parse(configValue);
-    } catch (error) {
+    } catch {
       parsedConfigValue = configValue;
     }
 

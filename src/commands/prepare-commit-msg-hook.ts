@@ -1,7 +1,7 @@
-import chalk from 'chalk';
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
 
 import { intro, outro, spinner } from '@clack/prompts';
+import chalk from 'chalk';
 
 import { generateCommitMessageByDiff } from '../generateCommitMessageFromGitDiff';
 import { getChangedFiles, getDiff, getStagedFiles, gitAdd } from '../utils/git';
@@ -10,7 +10,7 @@ import { getConfig } from './config';
 const [messageFilePath, commitSource] = process.argv.slice(2);
 
 export const prepareCommitMessageHook = async (
-  isStageAllFlag: Boolean = false
+  isStageAllFlag: boolean = false
 ) => {
   try {
     if (!messageFilePath) {
@@ -57,10 +57,10 @@ export const prepareCommitMessageHook = async (
 
     await fs.writeFile(
       messageFilePath,
-      commitMessage + '\n' + fileContent.toString()
+      `${commitMessage}\n${fileContent.toString()}`
     );
   } catch (error) {
-    outro(`${chalk.red('✖')} ${error}`);
+    if (error instanceof Error) outro(`${chalk.red('✖')} ${error.message}`);
     process.exit(1);
   }
 };

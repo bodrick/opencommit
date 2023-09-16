@@ -1,6 +1,3 @@
-import chalk from 'chalk';
-import { execa } from 'execa';
-
 import {
   confirm,
   intro,
@@ -10,6 +7,8 @@ import {
   select,
   spinner
 } from '@clack/prompts';
+import chalk from 'chalk';
+import { execa } from 'execa';
 
 import { generateCommitMessageByDiff } from '../generateCommitMessageFromGitDiff';
 import {
@@ -31,9 +30,10 @@ const getGitRemotes = async () => {
 
 // Check for the presence of message templates
 const checkMessageTemplate = (extraArgs: string[]): string | false => {
-  for (const key in extraArgs) {
-    if (extraArgs[key].includes(config?.OCO_MESSAGE_TEMPLATE_PLACEHOLDER))
-      return extraArgs[key];
+  for (const arg of extraArgs) {
+    if (arg.includes(config?.OCO_MESSAGE_TEMPLATE_PLACEHOLDER)) {
+      return arg;
+    }
   }
   return false;
 };
@@ -87,7 +87,7 @@ ${chalk.grey('——————————————————')}`
 
       const remotes = await getGitRemotes();
 
-      if (!remotes.length) {
+      if (remotes.length === 0) {
         const { stdout } = await execa('git', ['push']);
         if (stdout) outro(stdout);
         process.exit(0);
@@ -126,7 +126,9 @@ ${chalk.grey('——————————————————')}`
           options: remotes.map((remote) => ({ value: remote, label: remote }))
         })) as string;
 
-        if (!isCancel(selectedRemote)) {
+        if (isCancel(selectedRemote)) {
+          outro(`${chalk.gray('✖')} process cancelled`);
+        } else {
           const pushSpinner = spinner();
 
           pushSpinner.start(`Running 'git push ${selectedRemote}'`);
@@ -140,21 +142,20 @@ ${chalk.grey('——————————————————')}`
           );
 
           if (stdout) outro(stdout);
-        } else outro(`${chalk.gray('✖')} process cancelled`);
+        }
       }
     }
   } catch (error) {
     commitSpinner.stop('📝 Commit message generated');
 
-    const err = error as Error;
-    outro(`${chalk.red('✖')} ${err?.message || err}`);
+    if (error instanceof Error) outro(`${chalk.red('✖')} ${error.message}`);
     process.exit(1);
   }
 };
 
 export async function commit(
   extraArgs: string[] = [],
-  isStageAllFlag: Boolean = false
+  isStageAllFlag: boolean = false
 ) {
   if (isStageAllFlag) {
     const changedFiles = await getChangedFiles();
@@ -184,7 +185,7 @@ export async function commit(
 
   stagedFilesSpinner.start('Counting staged files');
 
-  if (!stagedFiles.length) {
+  if (stagedFiles.length === 0) {
     stagedFilesSpinner.stop('No files are staged');
     const isStageAllAndCommitConfirmedByUser = await confirm({
       message: 'Do you want to stage all files and generate commit message?'
@@ -230,7 +231,7 @@ export async function commit(
   );
 
   if (generateCommitError) {
-    outro(`${chalk.red('✖')} ${generateCommitError}`);
+    outro(`${chalk.red('✖')} ${generateCommitError.message}`);
     process.exit(1);
   }
 
