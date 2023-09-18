@@ -38,7 +38,7 @@ export const hookCommand = command(
     name: COMMANDS.hook,
     parameters: ['<set/unset>']
   },
-  async (argv) => {
+  async (argv): Promise<void> => {
     const HOOK_URL = __filename;
     const SYMLINK_URL = await getHooksPath();
     try {
@@ -55,7 +55,7 @@ export const hookCommand = command(
             realPath = await fs.realpath(SYMLINK_URL);
           } catch (error) {
             outro(error as string);
-            realPath = null;
+            realPath = undefined;
           }
 
           if (realPath === HOOK_URL)

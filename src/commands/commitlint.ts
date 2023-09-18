@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import { intro, outro } from '@clack/prompts';
 import chalk from 'chalk';
 import { command } from 'cleye';
@@ -24,6 +25,7 @@ export const commitlintConfigCommand = command(
       if (mode === CONFIG_MODES.get) {
         const commitLintConfig = await getCommitlintLLMConfig();
 
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         outro(commitLintConfig.toString());
 
         return;

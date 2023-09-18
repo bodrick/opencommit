@@ -9,9 +9,7 @@ import { getConfig } from './config';
 
 const [messageFilePath, commitSource] = process.argv.slice(2);
 
-export const prepareCommitMessageHook = async (
-  isStageAllFlag: boolean = false
-) => {
+export async function prepareCommitMessageHook(isStageAllFlag = false) {
   try {
     if (!messageFilePath) {
       throw new Error(
@@ -63,4 +61,4 @@ export const prepareCommitMessageHook = async (
     if (error instanceof Error) outro(`${chalk.red('✖')} ${error.message}`);
     process.exit(1);
   }
-};
+}

@@ -16,8 +16,8 @@ export const IDENTITY =
 
 const INIT_MAIN_PROMPT = (
   language: string
-): OpenAI.Chat.CreateChatCompletionRequestMessage => ({
-  role: ChatCompletionRequestMessageRoleEnum.System,
+): OpenAI.Chat.ChatCompletionMessageParam => ({
+  role: 'system',
   content: `${IDENTITY} Your mission is to create clean and comprehensive commit messages as per the conventional commit convention and explain WHAT were the changes and mainly WHY the changes were done. I'll send you an output of 'git diff --staged' command, and you are to convert it into a commit message.
     ${
       config?.OCO_EMOJI
@@ -32,10 +32,9 @@ const INIT_MAIN_PROMPT = (
     Use the present tense. Lines must not be longer than 74 characters. Use ${language} for the commit message.`
 });
 
-export const INIT_DIFF_PROMPT: OpenAI.Chat.CreateChatCompletionRequestMessage =
-  {
-    role: ChatCompletionRequestMessageRoleEnum.User,
-    content: `diff --git a/src/server.ts b/src/server.ts
+export const INIT_DIFF_PROMPT: OpenAI.Chat.ChatCompletionMessageParam = {
+  role: 'user',
+  content: `diff --git a/src/server.ts b/src/server.ts
     index ad4db42..f3b18a9 100644
     --- a/src/server.ts
     +++ b/src/server.ts
@@ -59,22 +58,22 @@ export const INIT_DIFF_PROMPT: OpenAI.Chat.CreateChatCompletionRequestMessage =
                 +app.listen(process.env.PORT || PORT, () => {
                     +  console.log(\`Server listening on port \${PORT}\`);
                 });`
-  };
+};
 
 const INIT_CONSISTENCY_PROMPT = (
   translation: ConsistencyPrompt
-): OpenAI.Chat.CreateChatCompletionRequestMessage => ({
-  role: ChatCompletionRequestMessageRoleEnum.Assistant,
+): OpenAI.Chat.ChatCompletionMessageParam => ({
+  role: 'assistant',
   content: `${config?.OCO_EMOJI ? '🐛 ' : ''}${translation.commitFix}
 ${config?.OCO_EMOJI ? '✨ ' : ''}${translation.commitFeat}
 ${config?.OCO_DESCRIPTION ? translation.commitDescription : ''}`
 });
 
 export const getMainCommitPrompt = async (): Promise<
-  OpenAI.Chat.CreateChatCompletionRequestMessage[]
+  OpenAI.Chat.ChatCompletionMessageParam[]
 > => {
   switch (config?.OCO_PROMPT_MODULE) {
-    case '@commitlint':
+    case '@commitlint': {
       if (!(await utils.commitlintLLMConfigExists())) {
         note(
           `OCO_PROMPT_MODULE is @commitlint but you haven't generated consistency for this project yet.`
@@ -95,13 +94,15 @@ export const getMainCommitPrompt = async (): Promise<
           commitLintConfig.consistency[translation.localLanguage]
         )
       ];
+    }
 
-    default:
+    default: {
       // conventional-commit
       return [
         INIT_MAIN_PROMPT(translation.localLanguage),
         INIT_DIFF_PROMPT,
         INIT_CONSISTENCY_PROMPT(translation)
       ];
+    }
   }
 };

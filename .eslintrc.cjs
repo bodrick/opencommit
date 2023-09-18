@@ -4,8 +4,8 @@ module.exports = {
   root: true,
   extends: [
     'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-type-checked',
+    'plugin:@typescript-eslint/stylistic-type-checked',
     'plugin:unicorn/recommended',
     'plugin:prettier/recommended'
   ],
@@ -31,18 +31,25 @@ module.exports = {
   },
   rules: {
     'prettier/prettier': 'error',
-    'no-console': 'error',
-    'import/order': 'off',
-    'sort-imports': 'off',
-    'simple-import-sort/imports': 'error',
-    'simple-import-sort/exports': 'error',
-    'import/first': 'error',
-    'import/newline-after-import': 'error',
-    'import/no-duplicates': 'error',
-    '@typescript-eslint/no-non-null-assertion': 'off',
+    'no-console': ['error', { allow: ['warn', 'error'] }],
+    // 'import/order': 'off',
+    // 'sort-imports': 'off',
+    // 'simple-import-sort/imports': 'error',
+    // 'simple-import-sort/exports': 'error',
+    // 'import/first': 'error',
+    // 'import/newline-after-import': 'error',
+    // 'import/no-duplicates': 'error',
+    '@typescript-eslint/no-unsafe-enum-comparison': 'off',
+    // '@typescript-eslint/no-non-null-assertion': 'off',
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/no-process-exit': 'off',
-    'unicorn/filename-case': 'off'
+    'unicorn/filename-case': 'off',
+    '@typescript-eslint/no-misused-promises': [
+      'error',
+      {
+        checksVoidReturn: false
+      }
+    ]
   },
   overrides: [
     {
