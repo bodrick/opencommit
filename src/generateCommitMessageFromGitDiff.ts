@@ -8,20 +8,26 @@ import { tokenCount } from './utils/tokenCount';
 
 const config = getConfig();
 
-const generateCommitMessageChatCompletionPrompt = async (
+/**
+ * Generates a commit message chat completion prompt.
+ *
+ * @param {string} diff - The diff representing the changes made.
+ * @return {Promise<OpenAI.Chat.ChatCompletionMessageParam[]>} The generated chat completion prompt.
+ */
+async function generateCommitMessageChatCompletionPrompt(
   diff: string
-): Promise<Array<OpenAI.Chat.CreateChatCompletionRequestMessage>> => {
+): Promise<OpenAI.Chat.ChatCompletionMessageParam[]> {
   const INIT_MESSAGES_PROMPT = await getMainCommitPrompt();
 
   const chatContextAsCompletionRequest = [...INIT_MESSAGES_PROMPT];
 
   chatContextAsCompletionRequest.push({
-    role: ChatCompletionRequestMessageRoleEnum.User,
+    role: 'user',
     content: diff
   });
 
   return chatContextAsCompletionRequest;
-};
+}
 
 export enum GenerateCommitMessageErrorEnum {
   tooMuchTokens = 'TOO_MUCH_TOKENS',
@@ -31,20 +37,30 @@ export enum GenerateCommitMessageErrorEnum {
 
 const ADJUSTMENT_FACTOR = 20;
 
-export const generateCommitMessageByDiff = async (
+/**
+ * Generates a commit message based on the provided diff.
+ *
+ * @param {string} diff - The diff representing the changes made.
+ * @return {Promise<string>} A promise that resolves to the generated commit message.
+ */
+export async function generateCommitMessageByDiff(
   diff: string
-): Promise<string> => {
+): Promise<string> {
   const INIT_MESSAGES_PROMPT = await getMainCommitPrompt();
 
   const INIT_MESSAGES_PROMPT_LENGTH = INIT_MESSAGES_PROMPT.map(
-    (msg) => tokenCount(msg.content) + 4
+    (msg) => tokenCount(msg.content ?? '') + 4
   ).reduce((a, b) => a + b, 0);
+
+  const MAX_TOKENS = config?.OCO_OPENAI_MAX_TOKENS;
+  if (typeof MAX_TOKENS !== 'number')
+    throw new Error('OCO_OPENAI_MAX_TOKENS is not a number');
 
   const MAX_REQUEST_TOKENS =
     DEFAULT_MODEL_TOKEN_LIMIT -
     ADJUSTMENT_FACTOR -
     INIT_MESSAGES_PROMPT_LENGTH -
-    config?.OCO_OPENAI_MAX_TOKENS;
+    MAX_TOKENS;
 
   if (tokenCount(diff) >= MAX_REQUEST_TOKENS) {
     const commitMessagePromises = await getCommitMsgsPromisesFromFileDiffs(
@@ -69,7 +85,7 @@ export const generateCommitMessageByDiff = async (
     throw new Error(GenerateCommitMessageErrorEnum.emptyMessage);
 
   return commitMessage;
-};
+}
 
 function getMessagesPromisesByChangesInFile(
   fileDiff: string,
@@ -142,10 +158,10 @@ function splitDiff(diff: string, maxChangeLength: number) {
   return splitDiffs;
 }
 
-export const getCommitMsgsPromisesFromFileDiffs = async (
+export async function getCommitMsgsPromisesFromFileDiffs(
   diff: string,
   maxDiffLength: number
-) => {
+) {
   const separator = 'diff --git ';
 
   const diffByFiles = diff.split(separator).slice(1);
@@ -175,7 +191,7 @@ export const getCommitMsgsPromisesFromFileDiffs = async (
   }
 
   return commitMessagePromises;
-};
+}
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
