@@ -25,9 +25,9 @@ cli(
     await checkIsLatestVersion();
 
     if (await isHookCalled()) {
-      prepareCommitMessageHook();
+      void prepareCommitMessageHook();
     } else {
-      commit(extraArgs);
+      void commit(extraArgs);
     }
   },
   extraArgs

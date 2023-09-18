@@ -14,11 +14,18 @@ const translation = i18n[(config?.OCO_LANGUAGE as I18nLocals) || 'en'];
 export const IDENTITY =
   'You are to act as the author of a commit message in git.';
 
-const INIT_MAIN_PROMPT = (
+/**
+ * Initializes the main prompt for the chat completion.
+ *
+ * @param {string} language - The language to be used for the commit message.
+ * @return {OpenAI.Chat.ChatCompletionMessageParam} - The chat completion message parameter.
+ */
+function INIT_MAIN_PROMPT(
   language: string
-): OpenAI.Chat.ChatCompletionMessageParam => ({
-  role: 'system',
-  content: `${IDENTITY} Your mission is to create clean and comprehensive commit messages as per the conventional commit convention and explain WHAT were the changes and mainly WHY the changes were done. I'll send you an output of 'git diff --staged' command, and you are to convert it into a commit message.
+): OpenAI.Chat.ChatCompletionMessageParam {
+  return {
+    role: 'system',
+    content: `${IDENTITY} Your mission is to create clean and comprehensive commit messages as per the conventional commit convention and explain WHAT were the changes and mainly WHY the changes were done. I'll send you an output of 'git diff --staged' command, and you are to convert it into a commit message.
     ${
       config?.OCO_EMOJI
         ? 'Use GitMoji convention to preface the commit.'
@@ -30,7 +37,8 @@ const INIT_MAIN_PROMPT = (
         : "Don't add any descriptions to the commit, only commit message."
     }
     Use the present tense. Lines must not be longer than 74 characters. Use ${language} for the commit message.`
-});
+  };
+}
 
 export const INIT_DIFF_PROMPT: OpenAI.Chat.ChatCompletionMessageParam = {
   role: 'user',
@@ -60,18 +68,31 @@ export const INIT_DIFF_PROMPT: OpenAI.Chat.ChatCompletionMessageParam = {
                 });`
 };
 
-const INIT_CONSISTENCY_PROMPT = (
+/**
+ * Initializes a consistency prompt for a chat completion message.
+ *
+ * @param {ConsistencyPrompt} translation - The translation of the consistency prompt.
+ * @return {OpenAI.Chat.ChatCompletionMessageParam} - The chat completion message parameter.
+ */
+function INIT_CONSISTENCY_PROMPT(
   translation: ConsistencyPrompt
-): OpenAI.Chat.ChatCompletionMessageParam => ({
-  role: 'assistant',
-  content: `${config?.OCO_EMOJI ? '🐛 ' : ''}${translation.commitFix}
+): OpenAI.Chat.ChatCompletionMessageParam {
+  return {
+    role: 'assistant',
+    content: `${config?.OCO_EMOJI ? '🐛 ' : ''}${translation.commitFix}
 ${config?.OCO_EMOJI ? '✨ ' : ''}${translation.commitFeat}
 ${config?.OCO_DESCRIPTION ? translation.commitDescription : ''}`
-});
+  };
+}
 
-export const getMainCommitPrompt = async (): Promise<
+/**
+ * Retrieves the main commit prompt for the given OCO_PROMPT_MODULE.
+ *
+ * @return {Promise<OpenAI.Chat.ChatCompletionMessageParam[]>} The main commit prompt as an array of ChatCompletionMessageParam.
+ */
+export async function getMainCommitPrompt(): Promise<
   OpenAI.Chat.ChatCompletionMessageParam[]
-> => {
+> {
   switch (config?.OCO_PROMPT_MODULE) {
     case '@commitlint': {
       if (!(await utils.commitlintLLMConfigExists())) {
@@ -105,4 +126,4 @@ export const getMainCommitPrompt = async (): Promise<
       ];
     }
   }
-};
+}

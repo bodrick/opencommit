@@ -31,7 +31,7 @@ module.exports = {
   },
   rules: {
     'prettier/prettier': 'error',
-    'no-console': ['error', { allow: ['warn', 'error'] }],
+    'no-console': ['error', { allow: ['info', 'warn', 'error'] }],
     // 'import/order': 'off',
     // 'sort-imports': 'off',
     // 'simple-import-sort/imports': 'error',
