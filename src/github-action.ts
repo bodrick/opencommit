@@ -23,6 +23,12 @@ const repo = context.repo.repo;
 type SHA = string;
 type Diff = string;
 
+/**
+ * Retrieves the difference between the specified commit and its parent commit.
+ *
+ * @param {string} commitSha - The SHA of the commit.
+ * @return {Promise<{ sha: string, diff: string }>} - A promise that resolves to an object containing the SHA of the commit and the diff.
+ */
 async function getCommitDiff(commitSha: string) {
   const diffResponse = await octokit.request<string>(
     'GET /repos/{owner}/{repo}/commits/{ref}',
@@ -35,7 +41,7 @@ async function getCommitDiff(commitSha: string) {
       }
     }
   );
-  return { sha: commitSha, diff: diffResponse.data };
+  return { sha: commitSha, diff: diffResponse.data as string };
 }
 
 interface DiffAndSHA {
@@ -48,16 +54,21 @@ interface MsgAndSHA {
   msg: string;
 }
 
-// send only 3-4 size chunks of diffs in steps,
-// because openAI restricts "too many requests" at once with 429 error
+/**
+ * Processes an array of diffs and SHA hashes in chunks to improve commit messages.
+ * Sends only 3-4 size chunks of diffs in steps, because openAI restricts "too many requests" at once with 429 error
+ *
+ * @param {DiffAndSHA[]} diffsAndSHAs - An array of diffs and SHA hashes.
+ * @return {Promise<MsgAndSHA[]>} - A promise that resolves to an array of improved commit messages and SHA hashes.
+ */
 async function improveMessagesInChunks(diffsAndSHAs: DiffAndSHA[]) {
-  const chunkSize = diffsAndSHAs!.length % 2 === 0 ? 4 : 3;
+  const chunkSize = diffsAndSHAs.length % 2 === 0 ? 4 : 3;
   outro(`Improving commit messages in chunks of ${chunkSize}.`);
-  const improvePromises = diffsAndSHAs!.map((commit) =>
+  const improvePromises = diffsAndSHAs.map((commit) =>
     generateCommitMessageByDiff(commit.diff)
   );
 
-  let improvedMessagesAndSHAs: MsgAndSHA[] = [];
+  const improvedMessagesAndSHAs: MsgAndSHA[] = [];
   for (let step = 0; step < improvePromises.length; step += chunkSize) {
     const chunkOfPromises = improvePromises.slice(step, step + chunkSize);
 
@@ -67,7 +78,7 @@ async function improveMessagesInChunks(diffsAndSHAs: DiffAndSHA[]) {
       const chunkOfImprovedMessagesBySha = chunkOfImprovedMessages.map(
         (improvedMsg, i) => {
           const index = improvedMessagesAndSHAs.length;
-          const sha = diffsAndSHAs![index + i].sha;
+          const sha = diffsAndSHAs[index + i].sha;
 
           return { sha, msg: improvedMsg };
         }
@@ -90,7 +101,7 @@ async function improveMessagesInChunks(diffsAndSHAs: DiffAndSHA[]) {
 
       // if sleeping in try block still fails with 429,
       // openAI wants at least 1 minute before next request
-      const sleepFor = 60000 + 1000 * randomIntFromInterval(1, 5);
+      const sleepFor = 60_000 + 1000 * randomIntFromInterval(1, 5);
       outro(`Retrying after sleeping for ${sleepFor}`);
       await sleep(sleepFor);
 
@@ -102,7 +113,13 @@ async function improveMessagesInChunks(diffsAndSHAs: DiffAndSHA[]) {
   return improvedMessagesAndSHAs;
 }
 
-const getDiffsBySHAs = async (SHAs: string[]) => {
+/**
+ * Retrieves the commit diffs for the given array of SHAs.
+ *
+ * @param {string[]} SHAs - An array of commit SHAs.
+ * @return {Promise<any[]>} A Promise that resolves to an array of commit diffs.
+ */
+async function getDiffsBySHAs(SHAs: string[]) {
   const diffPromises = SHAs.map((sha) => getCommitDiff(sha));
 
   const diffs = await Promise.all(diffPromises).catch((error) => {
@@ -111,12 +128,18 @@ const getDiffsBySHAs = async (SHAs: string[]) => {
   });
 
   return diffs;
-};
+}
 
+/**
+ * Improves commit messages for a given list of commits.
+ *
+ * @param {Array<{ id: string; message: string }>} commitsToImprove - The list of commits to improve.
+ * @return {Promise<void>} A promise that resolves when the commit messages have been improved.
+ */
 async function improveCommitMessages(
   commitsToImprove: { id: string; message: string }[]
 ): Promise<void> {
-  if (commitsToImprove.length) {
+  if (commitsToImprove.length > 0) {
     outro(`Found ${commitsToImprove.length} commits to improve.`);
   } else {
     outro('No new commits found.');
@@ -130,26 +153,24 @@ async function improveCommitMessages(
 
   const improvedMessagesWithSHAs = await improveMessagesInChunks(diffsWithSHAs);
 
-  console.log(
-    `Improved ${improvedMessagesWithSHAs.length} commits: `,
+  console.info(
+    `Improved ${improvedMessagesWithSHAs.length} commits:`,
     improvedMessagesWithSHAs
   );
 
   // Check if there are actually any changes in the commit messages
   const messagesChanged = improvedMessagesWithSHAs.some(
-    ({ sha, msg }, index) => msg !== commitsToImprove[index].message
+    ({ msg }, index) => msg !== commitsToImprove[index].message
   );
 
   if (!messagesChanged) {
-    console.log('No changes in commit messages detected, skipping rebase');
+    console.info('No changes in commit messages detected, skipping rebase');
     return;
   }
 
-  const createCommitMessageFile = (message: string, index: number) =>
+  for (const [index, { msg: message }] of improvedMessagesWithSHAs.entries()) {
     writeFileSync(`./commit-${index}.txt`, message);
-  improvedMessagesWithSHAs.forEach(({ msg }, i) =>
-    createCommitMessageFile(msg, i)
-  );
+  }
 
   writeFileSync(`./count.txt`, '0');
 
@@ -175,9 +196,9 @@ async function improveCommitMessages(
     }
   );
 
-  const deleteCommitMessageFile = (index: number) =>
+  for (const [index] of commitsToImprove.entries()) {
     unlinkSync(`./commit-${index}.txt`);
-  commitsToImprove.forEach((_commit, i) => deleteCommitMessageFile(i));
+  }
 
   unlinkSync('./count.txt');
   unlinkSync('./rebase-exec.sh');
@@ -192,6 +213,11 @@ async function improveCommitMessages(
   outro('Done 🧙');
 }
 
+/**
+ * Runs the main logic of the program.
+ *
+ * @return {Promise<void>} Promise that resolves when the function completes.
+ */
 async function run() {
   intro('OpenCommit — improving lame commit messages');
 
@@ -219,10 +245,9 @@ async function run() {
         `OpenCommit was called on ${github.context.payload.action}. OpenCommit is supposed to be used on "push" action.`
       );
     }
-  } catch (error: any) {
-    const err = error?.message || error;
-    core.setFailed(err);
+  } catch (error) {
+    if (error instanceof Error) core.setFailed(error.message);
   }
 }
 
-run();
+await run();
