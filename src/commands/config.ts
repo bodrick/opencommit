@@ -47,7 +47,7 @@ const validateConfig = (
 };
 
 export const configValidators = {
-  [CONFIG_KEYS.OCO_OPENAI_API_KEY](value: any, config?: any) {
+  [CONFIG_KEYS.OCO_OPENAI_API_KEY](value: any, config: any = {}) {
     validateConfig(CONFIG_KEYS.OCO_OPENAI_API_KEY, value, 'Cannot be empty');
     validateConfig(
       CONFIG_KEYS.OCO_OPENAI_API_KEY,
@@ -127,7 +127,8 @@ export const configValidators = {
         'gpt-3.5-turbo',
         'gpt-4',
         'gpt-3.5-turbo-16k',
-        'gpt-3.5-turbo-0613'
+        'gpt-3.5-turbo-0613',
+        'gpt-4-1106-preview'
       ].includes(value),
       `${value} is not supported yet, use 'gpt-4', 'gpt-3.5-turbo-16k' (default), 'gpt-3.5-turbo-0613' or 'gpt-3.5-turbo'`
     );
