@@ -153,10 +153,7 @@ ${chalk.grey('——————————————————')}`
   }
 };
 
-export async function commit(
-  extraArgs: string[] = [],
-  isStageAllFlag: boolean = false
-) {
+export async function commit(extraArgs: string[] = [], isStageAllFlag = false) {
   if (isStageAllFlag) {
     const changedFiles = await getChangedFiles();
 
@@ -177,7 +174,11 @@ export async function commit(
 
   intro('open-commit');
   if (errorChangedFiles ?? errorStagedFiles) {
-    outro(`${chalk.red('✖')} ${errorChangedFiles ?? errorStagedFiles}`);
+    outro(
+      `${chalk.red('✖')} ${
+        errorChangedFiles?.message ?? errorStagedFiles?.message
+      }`
+    );
     process.exit(1);
   }
 

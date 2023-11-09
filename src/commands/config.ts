@@ -34,7 +34,7 @@ export enum CONFIG_MODES {
 
 const validateConfig = (
   key: string,
-  condition: any,
+  condition: boolean,
   validationMessage: string
 ) => {
   if (!condition) {
@@ -243,18 +243,18 @@ export const configCommand = command(
     name: COMMANDS.config,
     parameters: ['<mode>', '<key=values...>']
   },
-  async (argv) => {
+  (argv) => {
     intro('opencommit — config');
     try {
       const { mode, keyValues } = argv._;
 
       if (mode === CONFIG_MODES.get) {
-        const config = getConfig() || {};
+        const config = getConfig() ?? {};
         for (const key of keyValues) {
           outro(`${key}=${config[key as keyof typeof config]}`);
         }
       } else if (mode === CONFIG_MODES.set) {
-        await setConfig(
+        setConfig(
           keyValues.map((keyValue) => keyValue.split('=') as [string, string])
         );
       } else {
@@ -263,7 +263,9 @@ export const configCommand = command(
         );
       }
     } catch (error) {
-      outro(`${chalk.red('✖')} ${error}`);
+      if (error instanceof Error) {
+        outro(`${chalk.red('✖')} ${error.message}`);
+      }
       process.exit(1);
     }
   }

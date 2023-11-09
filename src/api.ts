@@ -14,9 +14,9 @@ import { tokenCount } from './utils/tokenCount';
 
 const config = getConfig();
 
-let maxTokens = config?.OCO_OPENAI_MAX_TOKENS;
-let basePath = config?.OCO_OPENAI_BASE_PATH;
-let apiKey = config?.OCO_OPENAI_API_KEY;
+const maxTokens = config?.OCO_OPENAI_MAX_TOKENS;
+const basePath = config?.OCO_OPENAI_BASE_PATH;
+const apiKey = config?.OCO_OPENAI_API_KEY;
 
 const [command, mode] = process.argv.slice(2);
 
