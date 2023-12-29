@@ -21680,7 +21680,7 @@ function tokenCount(content) {
 var config2 = getConfig();
 var maxTokens = config2?.OCO_OPENAI_MAX_TOKENS;
 var basePath = config2?.OCO_OPENAI_BASE_PATH;
-var apiKey = config2?.OCO_OPENAI_API_KEY;
+var apiKey = config2?.OCO_OPENAI_API_KEY || process.env.OCO_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
 var [command, mode] = process.argv.slice(2);
 if (!apiKey && command !== "config" && mode !== "set" /* set */) {
   ae("opencommit");
@@ -22306,7 +22306,7 @@ var checkMessageTemplate = (extraArgs2) => {
   }
   return false;
 };
-var generateCommitMessageFromGitDiff = async (diff, extraArgs2) => {
+var generateCommitMessageFromGitDiff = async (diff, extraArgs2, isYesFlagSet2) => {
   await assertGitRepo();
   const commitSpinner = le();
   commitSpinner.start("Generating the commit message");
@@ -22320,15 +22320,7 @@ var generateCommitMessageFromGitDiff = async (diff, extraArgs2) => {
       );
     }
     commitSpinner.stop("\u{1F4DD} Commit message generated");
-    ce(
-      `Generated commit message:
-${source_default.grey("\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014")}
-${commitMessage}
-${source_default.grey("\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014")}`
-    );
-    const isCommitConfirmedByUser = await Q3({
-      message: "Confirm the commit message?"
-    });
+    const isCommitConfirmedByUser = isYesFlagSet2 ? true : await Q3({ message: "Confirm the commit message?" });
     if (isCommitConfirmedByUser && !eD2(isCommitConfirmedByUser)) {
       const { stdout } = await execa("git", [
         "commit",
@@ -22346,9 +22338,7 @@ ${source_default.grey("\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2
         process.exit(0);
       }
       if (remotes.length === 1) {
-        const isPushConfirmedByUser = await Q3({
-          message: "Do you want to run `git push`?"
-        });
+        const isPushConfirmedByUser = isYesFlagSet2 ? true : await Q3({ message: "Do you want to run `git push`?" });
         if (isPushConfirmedByUser && !eD2(isPushConfirmedByUser)) {
           const pushSpinner = le();
           pushSpinner.start(`Running 'git push ${remotes[0]}'`);
@@ -22393,16 +22383,7 @@ ${source_default.grey("\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2
     process.exit(1);
   }
 };
-async function commit(extraArgs2 = [], isStageAllFlag = false) {
-  if (isStageAllFlag) {
-    const changedFiles2 = await getChangedFiles();
-    if (changedFiles2)
-      await gitAdd({ files: changedFiles2 });
-    else {
-      ce("No changes detected, write some code and run `oco` again");
-      process.exit(1);
-    }
-  }
+async function commit(extraArgs2 = [], isStageAllFlag = false, isYesFlagSet2 = false) {
   const [stagedFiles, errorStagedFiles] = await trytm(getStagedFiles());
   const [changedFiles, errorChangedFiles] = await trytm(getChangedFiles());
   if (!changedFiles?.length && !stagedFiles?.length) {
@@ -22417,12 +22398,15 @@ async function commit(extraArgs2 = [], isStageAllFlag = false) {
   const stagedFilesSpinner = le();
   stagedFilesSpinner.start("Counting staged files");
   if (!stagedFiles.length) {
+    if (isYesFlagSet2) {
+      await execa("git", ["add", "."]);
+    }
     stagedFilesSpinner.stop("No files are staged");
-    const isStageAllAndCommitConfirmedByUser = await Q3({
+    const isStageAllAndCommitConfirmedByUser = isYesFlagSet2 ? true : await Q3({
       message: "Do you want to stage all files and generate commit message?"
     });
     if (isStageAllAndCommitConfirmedByUser && !eD2(isStageAllAndCommitConfirmedByUser)) {
-      await commit(extraArgs2, true);
+      await commit(extraArgs2, true, isYesFlagSet2);
       process.exit(1);
     }
     if (stagedFiles.length === 0 && changedFiles.length > 0) {
@@ -22437,7 +22421,7 @@ async function commit(extraArgs2 = [], isStageAllFlag = false) {
         process.exit(1);
       await gitAdd({ files });
     }
-    await commit(extraArgs2, false);
+    await commit(extraArgs2, false, isYesFlagSet2);
     process.exit(1);
   }
   stagedFilesSpinner.stop(
@@ -22447,7 +22431,8 @@ ${stagedFiles.map((file) => `  ${file}`).join("\n")}`
   const [, generateCommitError] = await trytm(
     generateCommitMessageFromGitDiff(
       await getDiff({ files: stagedFiles }),
-      extraArgs2
+      extraArgs2,
+      isYesFlagSet2
     )
   );
   if (generateCommitError) {
@@ -22637,12 +22622,20 @@ Current version: ${currentVersion}. Latest version: ${latestVersion}.
 
 // src/cli.ts
 var extraArgs = process.argv.slice(2);
+var isYesFlagSet = extraArgs.includes("--yes") || extraArgs.includes("-y");
 Z2(
   {
     version: package_default.version,
     name: "opencommit",
     commands: [configCommand, hookCommand, commitlintConfigCommand],
-    flags: {},
+    flags: {
+      yes: {
+        type: Boolean,
+        alias: "y",
+        description: "Automatically add all files, accept the commit message, and push the code",
+        default: "n"
+      }
+    },
     ignoreArgv: (type) => type === "unknown-flag" || type === "argument",
     help: { description: package_default.description }
   },
@@ -22651,7 +22644,7 @@ Z2(
     if (await isHookCalled()) {
       prepareCommitMessageHook();
     } else {
-      commit(extraArgs);
+      commit(extraArgs, false, isYesFlagSet);
     }
   },
   extraArgs
