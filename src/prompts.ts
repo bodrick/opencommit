@@ -1,4 +1,3 @@
-import { type ChatCompletionRequestMessage, ChatCompletionRequestMessageRoleEnum } from 'openai';
 
 import { note } from '@clack/prompts';
 

@@ -1,11 +1,7 @@
 import axios from 'axios';
 import chalk from 'chalk';
 import { execa } from 'execa';
-import {
-  type ChatCompletionRequestMessage,
-  Configuration as OpenAiApiConfiguration,
-  OpenAIApi
-} from 'openai';
+import OpenAI from 'openai';
 
 import { intro, outro } from '@clack/prompts';
 
@@ -38,13 +34,13 @@ class OpenAi {
   private openAiApiConfiguration = new OpenAiApiConfiguration({
     apiKey: apiKey
   });
-  private openAI!: OpenAIApi;
+  private openAI!: OpenAI;
 
   constructor() {
     if (basePath) {
       this.openAiApiConfiguration.basePath = basePath;
     }
-    this.openAI = new OpenAIApi(this.openAiApiConfiguration);
+    this.openAI = new OpenAI(this.openAiApiConfiguration);
   }
 
   public generateCommitMessage = async (

@@ -1,12 +1,11 @@
 import chalk from 'chalk';
-import { type ChatCompletionRequestMessage, ChatCompletionRequestMessageRoleEnum } from 'openai';
 
 import { outro } from '@clack/prompts';
 import {
-  type PromptConfig,
-  type QualifiedConfig,
-  RuleConfigSeverity,
-  type RuleConfigTuple
+    type PromptConfig,
+    type QualifiedConfig,
+    RuleConfigSeverity,
+    type RuleConfigTuple
 } from '@commitlint/types';
 
 import { getConfig } from '../../commands/config';

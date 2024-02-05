@@ -1,4 +1,3 @@
-import { type ChatCompletionRequestMessage, ChatCompletionRequestMessageRoleEnum } from 'openai';
 
 import { api } from './api';
 import { DEFAULT_MODEL_TOKEN_LIMIT, getConfig } from './commands/config';
