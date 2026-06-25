@@ -1,82 +1,88 @@
 {
-  "name": "@dvla/opencommit",
-  "version": "1.0.0-beta",
+  "name": "@bodrick/opencommit",
+  "version": "4.0.0",
   "description": "Auto-generate impressive commits in 1 second. Killing lame commits with AI 🤯🔫",
   "keywords": [
-    "git",
-    "chatgpt",
-    "gpt",
     "ai",
-    "openai",
-    "opencommit",
     "aicommit",
     "aicommits",
+    "chatgpt",
+    "commit",
+    "git",
+    "gpt",
     "gptcommit",
-    "commit"
+    "openai",
+    "opencommit"
   ],
-  "main": "cli.js",
-  "bin": {
-    "opencommit": "./out/cli.cjs",
-    "oco": "./out/cli.cjs"
-  },
   "repository": {
-    "url": "https://github.com/dvla/opencommit"
+    "url": "https://github.com/bodrick/opencommit"
   },
-  "type": "module",
-  "author": "https://github.com/di-sukharev",
   "license": "MIT",
+  "author": "https://github.com/bodrick",
+  "type": "module",
+  "bin": {
+    "oco": "./dist/cli.js",
+    "opencommit": "./dist/cli.js"
+  },
   "files": [
-    "out/cli.cjs",
-    "out/tiktoken_bg.wasm"
+    "dist"
   ],
-  "release": {
-    "branches": [
-      "master"
-    ]
-  },
-  "publishConfig": {
-    "registry": "https://nexus.tooling.dvla.gov.uk/repository/npm-private"
-  },
   "scripts": {
-    "watch": "npm run -S build -- --sourcemap --watch",
-    "start": "node ./out/cli.cjs",
-    "dev": "ts-node ./src/cli.ts",
-    "build": "rimraf out && node esbuild.config.js",
-    "build:push": "npm run build && git add . && git commit -m 'build' && git push",
-    "deploy": "npm version patch && npm run build:push && git push --tags && npm publish --tag latest",
-    "lint": "eslint src --ext ts && tsc --noEmit",
-    "format": "prettier --write src"
-  },
-  "devDependencies": {
-    "@commitlint/types": "^17.4.4",
-    "@types/ini": "^1.3.31",
-    "@types/inquirer": "^9.0.3",
-    "@types/node": "^16.18.14",
-    "@typescript-eslint/eslint-plugin": "^5.45.0",
-    "@typescript-eslint/parser": "^5.45.0",
-    "dotenv": "^16.0.3",
-    "esbuild": "^0.15.18",
-    "eslint": "^8.28.0",
-    "prettier": "^2.8.4",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.9.3"
+    "build": "tsx build.ts",
+    "build:push": "pnpm build && git add . && git commit -m 'build' && git push",
+    "deploy": "pnpm version patch && pnpm run build:push && git push --tags && pnpm publish --tag latest",
+    "dev": "tsx ./src/cli.ts",
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "start": "node ./dist/cli.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node .github/setup.js"
   },
   "dependencies": {
-    "@actions/core": "^1.10.0",
+    "@actions/core": "^1.10.1",
     "@actions/exec": "^1.1.1",
-    "@actions/github": "^5.1.1",
-    "@clack/prompts": "^0.6.1",
-    "@dqbd/tiktoken": "^1.0.2",
-    "@octokit/webhooks-schemas": "^6.11.0",
-    "@octokit/webhooks-types": "^6.11.0",
-    "axios": "^1.3.4",
-    "chalk": "^5.2.0",
+    "@actions/github": "^6.0.0",
+    "@clack/prompts": "^0.7.0",
+    "@dqbd/tiktoken": "^1.0.13",
+    "@octokit/webhooks-schemas": "^7.3.2",
+    "@octokit/webhooks-types": "^7.3.2",
+    "axios": "^1.6.7",
+    "chalk": "^5.3.0",
     "cleye": "^1.3.2",
-    "crypto": "^1.0.1",
-    "execa": "^7.0.0",
-    "ignore": "^5.2.4",
-    "ini": "^3.0.1",
-    "inquirer": "^9.1.4",
-    "openai": "^3.2.1"
+    "execa": "^8.0.1",
+    "ignore": "^5.3.1",
+    "ini": "^4.1.1",
+    "inquirer": "^9.2.15",
+    "openai": "^4.28.0",
+    "semver": "^7.6.0"
+  },
+  "devDependencies": {
+    "@commander-js/extra-typings": "^12.0.0",
+    "@commitlint/types": "^18.6.1",
+    "@types/ini": "^4.1.0",
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.11.19",
+    "@types/semver": "^7.5.7",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "commander": "^12.0.0",
+    "del": "^7.1.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-perfectionist": "^2.5.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-simple-import-sort": "^12.0.0",
+    "eslint-plugin-unicorn": "^51.0.1",
+    "prettier": "^3.2.5",
+    "tsup": "^8.0.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
